@@ -1,0 +1,14 @@
+/Users/rohan/Documents/dev/tiptaptoe/bin/Debug/net9.0/tiptaptoe
+/Users/rohan/Documents/dev/tiptaptoe/bin/Debug/net9.0/tiptaptoe.deps.json
+/Users/rohan/Documents/dev/tiptaptoe/bin/Debug/net9.0/tiptaptoe.runtimeconfig.json
+/Users/rohan/Documents/dev/tiptaptoe/bin/Debug/net9.0/tiptaptoe.dll
+/Users/rohan/Documents/dev/tiptaptoe/bin/Debug/net9.0/tiptaptoe.pdb
+/Users/rohan/Documents/dev/tiptaptoe/obj/Debug/net9.0/tiptaptoe.GeneratedMSBuildEditorConfig.editorconfig
+/Users/rohan/Documents/dev/tiptaptoe/obj/Debug/net9.0/tiptaptoe.AssemblyInfoInputs.cache
+/Users/rohan/Documents/dev/tiptaptoe/obj/Debug/net9.0/tiptaptoe.AssemblyInfo.cs
+/Users/rohan/Documents/dev/tiptaptoe/obj/Debug/net9.0/tiptaptoe.csproj.CoreCompileInputs.cache
+/Users/rohan/Documents/dev/tiptaptoe/obj/Debug/net9.0/tiptaptoe.dll
+/Users/rohan/Documents/dev/tiptaptoe/obj/Debug/net9.0/refint/tiptaptoe.dll
+/Users/rohan/Documents/dev/tiptaptoe/obj/Debug/net9.0/tiptaptoe.pdb
+/Users/rohan/Documents/dev/tiptaptoe/obj/Debug/net9.0/tiptaptoe.genruntimeconfig.cache
+/Users/rohan/Documents/dev/tiptaptoe/obj/Debug/net9.0/ref/tiptaptoe.dll
