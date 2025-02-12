@@ -12,3 +12,4 @@
 /Users/rohan/Documents/dev/tiptaptoe/obj/Debug/net9.0/tiptaptoe.pdb
 /Users/rohan/Documents/dev/tiptaptoe/obj/Debug/net9.0/tiptaptoe.genruntimeconfig.cache
 /Users/rohan/Documents/dev/tiptaptoe/obj/Debug/net9.0/ref/tiptaptoe.dll
+/Users/rohan/Documents/dev/tiptaptoe/obj/Debug/net9.0/tiptaptoe.sourcelink.json
