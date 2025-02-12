@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("tiptaptoe")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+af494bddb92e0ad167da7c5db909ba1be6ef0808")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+f1882fdd83813870f91d21aecaa05a5f99368a92")]
 [assembly: System.Reflection.AssemblyProductAttribute("tiptaptoe")]
 [assembly: System.Reflection.AssemblyTitleAttribute("tiptaptoe")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

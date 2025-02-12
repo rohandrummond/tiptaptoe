@@ -13,7 +13,7 @@ namespace TipTapToe
 
             // Log variables
             List<LogItem> keyLog = [];
-            char key;
+            KeyInput keyInput;
             bool? result;
             TimeSpan timeStamp;
 
@@ -41,6 +41,7 @@ namespace TipTapToe
                     if (keyInfo.KeyChar == test[pointer])
                     {
                         Console.WriteLine("Correct");
+                        keyInput = new KeyInput(keyInfo.KeyChar);
                         result = true;
                         pointer ++;
                     }
@@ -49,6 +50,7 @@ namespace TipTapToe
                     else if (keyInfo.Key == ConsoleKey.Backspace)
                     {
                         Console.WriteLine("Backspace");
+                        keyInput = new KeyInput(keyInfo.Key);
                         result = null;
                     }
 
@@ -56,30 +58,65 @@ namespace TipTapToe
                     else
                     {
                         Console.WriteLine("Incorrect");
+                        keyInput = new KeyInput(keyInfo.KeyChar);
                         result = false;
                     }
 
                     // Log key press
-                    key = keyInfo.KeyChar;
                     timeStamp = stopWatch.Elapsed;
-                    var logItem = new LogItem
-                    {
-                        Key = key,
-                        Timestamp = timeStamp,
-                        Result = result,
-                    };
+                    var logItem = new LogItem(keyInput.ToString(), timeStamp.ToString(), result);
                     keyLog.Add(logItem);
                 }
             }
             while (keyInfo.Key != ConsoleKey.Escape);
+            PrintLog(keyLog);
         }
 
-        public class LogItem
+        // Struct for storing key that was pressed
+        public struct KeyInput
         {
-            public required char Key { get; set; }
-            public required TimeSpan Timestamp { get; set; }
-            public bool? Result { get; set; }
+            public char? Char { get; set; }
+            public ConsoleKey? Key { get; set;}
+
+            public KeyInput(char c)
+            {
+                Char = c;
+                Key = null;
+            }
+            public KeyInput(ConsoleKey k)
+            {
+                Char = null;
+                Key = k;
+            }
+
+            public readonly override string ToString()
+            {
+                return Char.ToString() + Key.ToString();
+            }
+
         }
-        
+
+        // Class for logging key press
+        public class LogItem(string key, string timestamp, bool? result)
+        {
+            public string Key { get; set; } = key;
+            public string Timestamp { get; set; } = timestamp;
+            public bool? Result { get; set; } = result;
+
+            public override string ToString()
+            {
+                return $"Key: {Key}, " + $"Timestamp: {Timestamp}, " + $"Result: {(Result != null ? Result : "null")}";
+            }
+        }
+
+        // Function for printing log to console
+        public static void PrintLog(List<LogItem> keyLog)
+        {
+            foreach (var item in keyLog)
+            {
+                Console.WriteLine(item);
+            }
+        }
+
     }
 }
