@@ -19,6 +19,7 @@ namespace TipTapToe
 
             // Test string and pointer
             string test = "hello";
+            string input = "";
             int pointer = 0;
 
             // User prompt
@@ -40,8 +41,8 @@ namespace TipTapToe
                     // Correct
                     if (keyInfo.KeyChar == test[pointer])
                     {
-                        Console.WriteLine("Correct");
                         keyInput = new KeyInput(keyInfo.KeyChar);
+                        input += keyInput;
                         result = true;
                         pointer ++;
                     }
@@ -49,16 +50,28 @@ namespace TipTapToe
                     // Backspace
                     else if (keyInfo.Key == ConsoleKey.Backspace)
                     {
-                        Console.WriteLine("Backspace");
+                        Console.Write("\b \b");
                         keyInput = new KeyInput(keyInfo.Key);
+                        if (pointer != 0)
+                        {
+                            if (input[pointer - 1] == test[pointer - 1])
+                            {
+                            Console.WriteLine("Previous character in user input was correct");
+                            pointer -= 1;
+                            }
+                        }
+                        if (input.Length > 0) {
+                            string mutatedString = input.Remove(input.Length - 1);
+                            input = mutatedString;
+                        }
                         result = null;
                     }
 
                     // Incorrect
                     else
                     {
-                        Console.WriteLine("Incorrect");
                         keyInput = new KeyInput(keyInfo.KeyChar);
+                        input += keyInput;
                         result = false;
                     }
 
@@ -66,9 +79,14 @@ namespace TipTapToe
                     timeStamp = stopWatch.Elapsed;
                     var logItem = new LogItem(keyInput.ToString(), timeStamp.ToString(), result);
                     keyLog.Add(logItem);
+
+                    // Print input tracking string
+                    Console.WriteLine("input is currently: " + input);
                 }
             }
-            while (keyInfo.Key != ConsoleKey.Escape);
+            while (keyInfo.Key != ConsoleKey.Escape && pointer < test.Length);
+
+            // Print key press log
             PrintLog(keyLog);
         }
 
