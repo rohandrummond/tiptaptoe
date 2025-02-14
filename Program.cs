@@ -17,7 +17,7 @@ namespace TipTapToe
             bool? result;
             TimeSpan timeStamp;
 
-            // Test string and pointer
+            // Test string, input validation and pointer
             string test = "hello";
             string input = "";
             int pointer = 0;
@@ -29,7 +29,7 @@ namespace TipTapToe
 
             do 
             {
-                keyInfo = Console.ReadKey(true);
+                keyInfo = Console.ReadKey(false);
                 if (keyInfo.Key != ConsoleKey.Escape)
                 {
 
@@ -38,41 +38,44 @@ namespace TipTapToe
                         stopWatch.Start();
                     }
 
-                    // Correct
-                    if (keyInfo.KeyChar == test[pointer])
+                    // Handle backspace
+                    if (keyInfo.Key == ConsoleKey.Backspace)
                     {
-                        keyInput = new KeyInput(keyInfo.KeyChar);
-                        input += keyInput;
-                        result = true;
-                        pointer ++;
-                    }
-
-                    // Backspace
-                    else if (keyInfo.Key == ConsoleKey.Backspace)
-                    {
+                        // Delete character in console
                         Console.Write("\b \b");
-                        keyInput = new KeyInput(keyInfo.Key);
+
+                        // Update pointer
                         if (pointer != 0)
                         {
-                            if (input[pointer - 1] == test[pointer - 1])
-                            {
-                            Console.WriteLine("Previous character in user input was correct");
                             pointer -= 1;
-                            }
                         }
+
+                        // Trim last char from input validation 
                         if (input.Length > 0) {
                             string mutatedString = input.Remove(input.Length - 1);
-                            input = mutatedString;
+                            input = mutatedString; 
                         }
-                        result = null;
-                    }
 
-                    // Incorrect
-                    else
-                    {
+                        // Record result and key press
+                        result = null;
+                        keyInput = new KeyInput(keyInfo.Key);
+                    }
+                    else {
+
+                        // Record correct or incorrect result
+                        if (pointer < test.Length && keyInfo.KeyChar == test[pointer])
+                        {
+                            result = true;
+                        }
+                        else
+                        {
+                            result = false;
+                        }
+
+                        // Update input validation and pointer
                         keyInput = new KeyInput(keyInfo.KeyChar);
                         input += keyInput;
-                        result = false;
+                        pointer += 1;
                     }
 
                     // Log key press
@@ -80,11 +83,14 @@ namespace TipTapToe
                     var logItem = new LogItem(keyInput.ToString(), timeStamp.ToString(), result);
                     keyLog.Add(logItem);
 
-                    // Print input tracking string
-                    Console.WriteLine("input is currently: " + input);
+                    // Check for correct input 
+                    if (pointer == test.Length && input == test)
+                    {
+                        break;
+                    }
                 }
             }
-            while (keyInfo.Key != ConsoleKey.Escape && pointer < test.Length);
+            while (keyInfo.Key != ConsoleKey.Escape);
 
             // Print key press log
             PrintLog(keyLog);
