@@ -2,12 +2,13 @@
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text.Json.Serialization;
+using System.Threading.Tasks;
 
 namespace TipTapToe
 {
     internal class Program
     {
-        public static void Main(string[] args)
+        public static async Task Main(string[] args)
         {
 
             // Set up HTTP client
@@ -17,98 +18,98 @@ namespace TipTapToe
                 new MediaTypeWithQualityHeaderValue("application/json")
             );    
 
-            GeminiApiRequest(client);
+            await GeminiApiRequest(client);
 
-            // Key tracking and stopwatch 
-            ConsoleKeyInfo keyInfo;
-            Stopwatch stopWatch = new Stopwatch();
+            // // Key tracking and stopwatch 
+            // ConsoleKeyInfo keyInfo;
+            // Stopwatch stopWatch = new Stopwatch();
 
-            // Log variables
-            List<LogItem> keyLog = [];
-            KeyInput keyInput;
-            bool? result;
-            TimeSpan timeStamp;
+            // // Log variables
+            // List<LogItem> keyLog = [];
+            // KeyInput keyInput;
+            // bool? result;
+            // TimeSpan timeStamp;
 
-            // Test string, input validation and pointer
-            string test = "hello";
-            string input = "";
-            int pointer = 0;
+            // // Test string, input validation and pointer
+            // string test = "hello";
+            // string input = "";
+            // int pointer = 0;
 
-            // User prompt
-            Console.WriteLine("Welcome to TipTapToe. Let's get practicing...");
-            Console.WriteLine($"Please type the following word:");
-            Console.WriteLine(test);
+            // // User prompt
+            // Console.WriteLine("Welcome to TipTapToe. Let's get practicing...");
+            // Console.WriteLine($"Please type the following word:");
+            // Console.WriteLine(test);
 
-            do 
-            {
-                keyInfo = Console.ReadKey(false);
-                if (keyInfo.Key != ConsoleKey.Escape)
-                {
+            // do 
+            // {
+            //     keyInfo = Console.ReadKey(false);
+            //     if (keyInfo.Key != ConsoleKey.Escape)
+            //     {
 
-                    // Start stopwatch
-                    if (!stopWatch.IsRunning) {
-                        stopWatch.Start();
-                    }
+            //         // Start stopwatch
+            //         if (!stopWatch.IsRunning) {
+            //             stopWatch.Start();
+            //         }
 
-                    // Handle backspace
-                    if (keyInfo.Key == ConsoleKey.Backspace)
-                    {
-                        // Delete character in console
-                        Console.Write("\b \b");
+            //         // Handle backspace
+            //         if (keyInfo.Key == ConsoleKey.Backspace)
+            //         {
+            //             // Delete character in console
+            //             Console.Write("\b \b");
 
-                        // Update pointer
-                        if (pointer != 0)
-                        {
-                            pointer -= 1;
-                        }
+            //             // Update pointer
+            //             if (pointer != 0)
+            //             {
+            //                 pointer -= 1;
+            //             }
 
-                        // Trim last char from input validation 
-                        if (input.Length > 0) {
-                            string mutatedString = input.Remove(input.Length - 1);
-                            input = mutatedString; 
-                        }
+            //             // Trim last char from input validation 
+            //             if (input.Length > 0) {
+            //                 string mutatedString = input.Remove(input.Length - 1);
+            //                 input = mutatedString; 
+            //             }
 
-                        // Record result and key press
-                        result = null;
-                        keyInput = new KeyInput(keyInfo.Key);
-                    }
-                    else {
+            //             // Record result and key press
+            //             result = null;
+            //             keyInput = new KeyInput(keyInfo.Key);
+            //         }
+            //         else {
 
-                        // Record correct or incorrect result
-                        if (pointer < test.Length && keyInfo.KeyChar == test[pointer])
-                        {
-                            result = true;
-                        }
-                        else
-                        {
-                            result = false;
-                        }
+            //             // Record correct or incorrect result
+            //             if (pointer < test.Length && keyInfo.KeyChar == test[pointer])
+            //             {
+            //                 result = true;
+            //             }
+            //             else
+            //             {
+            //                 result = false;
+            //             }
 
-                        // Update input validation and pointer
-                        keyInput = new KeyInput(keyInfo.KeyChar);
-                        input += keyInput;
-                        pointer += 1;
-                    }
+            //             // Update input validation and pointer
+            //             keyInput = new KeyInput(keyInfo.KeyChar);
+            //             input += keyInput;
+            //             pointer += 1;
+            //         }
 
-                    // Log key press
-                    timeStamp = stopWatch.Elapsed;
-                    var logItem = new LogItem(keyInput.ToString(), timeStamp.ToString(), result);
-                    keyLog.Add(logItem);
+            //         // Log key press
+            //         timeStamp = stopWatch.Elapsed;
+            //         var logItem = new LogItem(keyInput.ToString(), timeStamp.ToString(), result);
+            //         keyLog.Add(logItem);
 
-                    // Check for correct input 
-                    if (pointer == test.Length && input == test)
-                    {
-                        break;
-                    }
-                }
-            }
-            while (keyInfo.Key != ConsoleKey.Escape);
+            //         // Check for correct input 
+            //         if (pointer == test.Length && input == test)
+            //         {
+            //             break;
+            //         }
+            //     }
+            // }
+            // while (keyInfo.Key != ConsoleKey.Escape);
 
-            // Print key press log
-            PrintLog(keyLog);
+            // // Print key press log
+            // PrintLog(keyLog);
         }
 
-        private static void GeminiApiRequest(HttpClient client)
+        private static async Task GeminiApiRequest(HttpClient client)
         {
             string? geminiApiKey = Environment.GetEnvironmentVariable("GEMINI_API_KEY");
             if (geminiApiKey == null)
@@ -134,6 +135,9 @@ namespace TipTapToe
                 ]
             };
             JsonContent geminiBody = JsonContent.Create(geminiContents);
+            using HttpResponseMessage response = await client.PostAsync(geminiUri, geminiBody);
+            string responseContentString = await response.Content.ReadAsStringAsync();
+            Console.WriteLine(responseContentString);
         }
 
         public class GeminiContents
