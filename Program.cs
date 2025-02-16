@@ -1,11 +1,23 @@
 ﻿using System.Diagnostics;
+using System.Net.Http.Headers;
+using System.Net.Http.Json;
+using System.Text.Json.Serialization;
 
 namespace TipTapToe
 {
     internal class Program
     {
-        static void Main(string[] args)
+        public static void Main(string[] args)
         {
+
+            // Set up HTTP client
+            using HttpClient client = new();
+            client.DefaultRequestHeaders.Accept.Clear();
+            client.DefaultRequestHeaders.Accept.Add(
+                new MediaTypeWithQualityHeaderValue("application/json")
+            );    
+
+            GeminiApiRequest(client);
 
             // Key tracking and stopwatch 
             ConsoleKeyInfo keyInfo;
@@ -96,6 +108,61 @@ namespace TipTapToe
             PrintLog(keyLog);
         }
 
+        private static void GeminiApiRequest(HttpClient client)
+        {
+            string? geminiApiKey = Environment.GetEnvironmentVariable("GEMINI_API_KEY");
+            if (geminiApiKey == null)
+            {
+                Console.Error.WriteLine("Unable to find Gemini API Key.");
+                return;
+            }
+            string geminiUri = $"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={geminiApiKey}";
+            GeminiContents geminiContents = new()
+            {
+                Contents =
+                [
+                    new GeminiParts
+                    {
+                        Parts =
+                        [
+                            new GeminiPart
+                            {
+                                Part = "Write a story about a magic backpack."
+                            }
+                        ]
+                    }
+                ]
+            };
+            JsonContent geminiBody = JsonContent.Create(geminiContents);
+        }
+
+        public class GeminiContents
+        {
+            [JsonPropertyName("contents")]
+            public required List<GeminiParts> Contents { get; set; } 
+        }
+
+        public class GeminiParts
+        {
+            [JsonPropertyName("parts")]
+            public required List<GeminiPart> Parts { get; set; }
+        }
+
+        public class GeminiPart
+        {
+            [JsonPropertyName("text")]
+            public required string Part { get; set; }
+        }
+
+        // Function for printing log to console
+        public static void PrintLog(List<LogItem> keyLog)
+        {
+            foreach (var item in keyLog)
+            {
+                Console.WriteLine(item);
+            }
+        }
+
         // Struct for storing key that was pressed
         public struct KeyInput
         {
@@ -117,7 +184,6 @@ namespace TipTapToe
             {
                 return Char.ToString() + Key.ToString();
             }
-
         }
 
         // Class for logging key press
@@ -132,15 +198,6 @@ namespace TipTapToe
                 return $"Key: {Key}, " + $"Timestamp: {Timestamp}, " + $"Result: {(Result != null ? Result : "null")}";
             }
         }
-
-        // Function for printing log to console
-        public static void PrintLog(List<LogItem> keyLog)
-        {
-            foreach (var item in keyLog)
-            {
-                Console.WriteLine(item);
-            }
-        }
-
+        
     }
 }
