@@ -1,4 +1,5 @@
-﻿using System.Diagnostics;
+﻿using System.Collections;
+using System.Diagnostics;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text.Json;
@@ -30,7 +31,7 @@ namespace TipTapToe
             TimeSpan timeStamp;
 
             // Test string, input validation and pointer
-            string test = "hello";
+            string test = "helloworld";
             string input = "";
             int pointer = 0;
 
@@ -119,51 +120,121 @@ namespace TipTapToe
                 return;
             }
             string geminiUri = $"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={geminiApiKey}";
-            GeminiContents geminiContents = new()
+            GeminiBody geminiBody = new()
             {
                 Contents =
                 [
-                    new GeminiParts
+                    new ContentParts
                     {
                         Parts =
                         [
-                            new GeminiPart
+                            new ContentPart
                             {
-                                Part = @"I am building a typing practice tool for programmers. Below is a log of a user's keystrokes while typing code. 
-                                The log includes key presses, timing data, and potential error patterns. Based on this log, generate a new body of text 
-                                for the user to practice typing. The text should focus on improving their weaknesses, reinforcing their strengths, and 
-                                simulating real-world programming tasks."
+                                Part = "I am building a typing practice tool for programmers. Below is a log of a user's keystrokes while typing code. The log includes key presses, timing data, and potential error patterns. Based on this log, generate a new body of text for the user to practice typing. The text should focus on improving their weaknesses, reinforcing their strengths, and simulating real-world programming tasks."
                             },
-                            new GeminiPart
+                            new ContentPart
                             {
                                 Part = JsonSerializer.Serialize(keyLog)
                             }
                         ]
                     }
-                ]
+                ],
+                Config = new GenerationConfig
+                {
+                    ResponseMimeType = "application/json",
+                    ResponseSchema = new ConfigResponseSchema
+                    {
+                        Type = "ARRAY",
+                        Items = new ConfigItems
+                        {
+                            Type = "OBJECT",
+                            Properties = new ConfigProperties
+                            {
+                                Reasoning = new ConfigType{
+                                    Type = "STRING"
+                                },
+                                PracticeText = new ConfigType{
+                                    Type = "STRING"
+                                }
+                            }
+                        }
+                    }
+                }
             };
-            JsonContent geminiBody = JsonContent.Create(geminiContents);
-            using HttpResponseMessage response = await client.PostAsync(geminiUri, geminiBody);
+            string jsonString = JsonSerializer.Serialize(geminiBody, new JsonSerializerOptions{
+                WriteIndented = true
+            });
+            Console.WriteLine(jsonString);
+            JsonContent geminiJsonBody = JsonContent.Create(geminiBody);
+            using HttpResponseMessage response = await client.PostAsync(geminiUri, geminiJsonBody);
             string responseContentString = await response.Content.ReadAsStringAsync();
             Console.WriteLine(responseContentString);
         }
 
-        public class GeminiContents
+        // Gemini API body class
+        public class GeminiBody
         {
             [JsonPropertyName("contents")]
-            public required List<GeminiParts> Contents { get; set; } 
+            public required List<ContentParts> Contents { get; set; } 
+
+            [JsonPropertyName("generationConfig")]
+            public required GenerationConfig Config { get; set; } 
         }
 
-        public class GeminiParts
+        // Gemini API content classes
+        public class ContentParts
         {
             [JsonPropertyName("parts")]
-            public required List<GeminiPart> Parts { get; set; }
+            public required ArrayList Parts { get; set; }
         }
 
-        public class GeminiPart
+        public class ContentPart
         {
             [JsonPropertyName("text")]
             public required string Part { get; set; }
+        }
+
+        // Gemini API config classes
+        public class GenerationConfig
+        {
+            [JsonPropertyName("response_mime_type")]
+            public required string ResponseMimeType { get; set; }
+
+            [JsonPropertyName("response_schema")]
+            public required ConfigResponseSchema ResponseSchema { get; set; }
+        }
+
+        public class ConfigResponseSchema
+        {
+            [JsonPropertyName("type")]
+            public required string Type { get; set; }
+            
+            [JsonPropertyName("items")]
+            public required ConfigItems Items { get; set; }
+        }
+
+        public class ConfigItems
+        {
+            [JsonPropertyName("type")]
+            public required string Type { get; set; }
+
+            [JsonPropertyName("properties")]
+            public required ConfigProperties Properties { get; set; }
+        }
+
+        public class ConfigProperties
+        {
+            [JsonPropertyName("reasoning")]
+            public required ConfigType Reasoning { get; set; }
+
+            [JsonPropertyName("practiceText")]
+            public required ConfigType PracticeText { get; set; }
+        }
+
+        public class ConfigType
+        {
+            [JsonPropertyName("type")]
+            public required string Type { get; set; }
         }
 
         // Function for printing log to console
@@ -194,7 +265,7 @@ namespace TipTapToe
 
             public readonly override string ToString()
             {
-                return Char.ToString() + Key.ToString();
+                return Char?.ToString() ?? Key?.ToString() ?? string.Empty;
             }
         }
 
