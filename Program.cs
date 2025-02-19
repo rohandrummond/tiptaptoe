@@ -9,6 +9,55 @@ namespace TipTapToe
         public static async Task Main(string[] args)
         {
 
+            string assessment = "";
+            string language = "";
+            string input = "";
+            int pointer = 0;
+
+            // User language question
+            Console.WriteLine("\nWelcome to TipTapToe. Let's get practicing!");
+            Console.WriteLine("\nPlease choose an option from the following list:");
+            Console.WriteLine("\n\t1 - Python");
+            Console.WriteLine("\t2 - C++");
+            Console.WriteLine("\t3 - Java");
+            Console.WriteLine("\t4 - C#");
+            Console.WriteLine("\t5 - JavaScript");
+            Console.Write("\nWhat would you like to practice? ");
+
+            // Read user input and set language/assessment variables
+            switch (Console.ReadLine())
+            {
+                case "1":
+                    language = "Python";
+                    assessment = "Python assessment string to go here.";
+                    break;
+                case "2":
+                    language = "C++";
+                    assessment = "C++ assessment string to go here.";
+                    break;
+                case "3":
+                    language = "Java";
+                    assessment = "Java assessment string to go here.";
+                    break;
+                case "4":
+                    language = "C#";
+                    assessment = "C# assessment string to go here.";
+                    break;
+                case "5":
+                    language = "JavaScript";
+                    assessment = "JavaScript assessment string to go here.";
+                    break;
+                    
+                default:
+                    Console.WriteLine("\nYou're off to a bad start, looks like you made a typo. Please try again.\n");
+                    break;
+            }
+
+            if (assessment.Length == 0)
+            {
+                return;
+            }
+
             GeminiApiService geminiApiService = new();
 
             // Key tracking and stopwatch 
@@ -21,15 +70,10 @@ namespace TipTapToe
             bool? result;
             TimeSpan timeStamp;
 
-            // Test string, input validation and pointer
-            string test = "helloworld";
-            string input = "";
-            int pointer = 0;
 
-            // User prompt
-            Console.WriteLine("Welcome to TipTapToe. Let's get practicing...");
-            Console.WriteLine($"Please type the following word:");
-            Console.WriteLine(test);
+            // User typing assessment prompt
+            Console.WriteLine($"\nYou choose {language}. Let's get started with your assessment! Please type the following sequence:\n");
+            Console.WriteLine(assessment);
 
             do 
             {
@@ -67,7 +111,7 @@ namespace TipTapToe
                     else {
 
                         // Record correct or incorrect result
-                        if (pointer < test.Length && keyInfo.KeyChar == test[pointer])
+                        if (pointer < assessment.Length && keyInfo.KeyChar == assessment[pointer])
                         {
                             result = true;
                         }
@@ -88,7 +132,7 @@ namespace TipTapToe
                     keyLog.Add(logItem);
 
                     // Check for correct input 
-                    if (pointer == test.Length && input == test)
+                    if (pointer == assessment.Length && input == assessment)
                     {
                         break;
                     }
