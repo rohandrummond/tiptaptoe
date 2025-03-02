@@ -29,25 +29,24 @@ namespace TipTapToe
             {
                 case "1":
                     language = "Python";
-                    assessment = "Python assessment string to go here.";
+                    assessment = "name = input(\"Enter your name: \") print(\"Hello, \" + name + \"!\")";
                     break;
                 case "2":
                     language = "C++";
-                    assessment = "C++ assessment string to go here.";
+                    assessment = "#include <iostream>; int main() { std::string n; std::cin >> n; std::cout << \"Hello, \" << n << \"!\"; }";
                     break;
                 case "3":
                     language = "Java";
-                    assessment = "Java assessment string to go here.";
+                    assessment = "import java.util.*; class Main { public static void main(String[] a) { System.out.println(\"Hello, \" + new Scanner(System.in).nextLine() + \"!\"); } }";
                     break;
                 case "4":
                     language = "C#";
-                    assessment = "C# assessment string to go here.";
+                    assessment = "using System; class P { static void Main() { Console.WriteLine(\"Hello, \" + Console.ReadLine() + \"!\"); } }";
                     break;
                 case "5":
                     language = "JavaScript";
-                    assessment = "JavaScript assessment string to go here.";
+                    assessment = "console.log(\"Hello, \" + prompt(\"Enter your name:\") + \"!\");";
                     break;
-                    
                 default:
                     Console.WriteLine("\nYou're off to a bad start, looks like you made a typo. Please try again.\n");
                     break;
