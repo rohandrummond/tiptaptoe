@@ -22,6 +22,7 @@ namespace TipTapToe
             Console.WriteLine("\t3 - Java");
             Console.WriteLine("\t4 - C#");
             Console.WriteLine("\t5 - JavaScript");
+            Console.WriteLine("\t6 - test");
             Console.Write("\nWhat would you like to practice? ");
 
             // Read user input and set language/assessment variables
@@ -47,6 +48,10 @@ namespace TipTapToe
                     language = "JavaScript";
                     assessment = "console.log(\"Hello, \" + prompt(\"Enter your name:\") + \"!\");";
                     break;
+                case "6":
+                    language = "test";
+                    assessment = "test";
+                    break;
                 default:
                     Console.WriteLine("\nYou're off to a bad start, looks like you made a typo. Please try again.\n");
                     break;
@@ -71,7 +76,7 @@ namespace TipTapToe
 
 
             // User typing assessment prompt
-            Console.WriteLine($"\nYou choose {language}. Let's get started with your assessment! Please type the following sequence:\n");
+            Console.WriteLine($"\nYou chose {language}. Let's get started with your assessment! Please type the following sequence:\n");
             Console.WriteLine(assessment);
 
             do 
@@ -136,21 +141,21 @@ namespace TipTapToe
                         break;
                     }
                 }
+                else
+                {
+                    return;
+                }
             }
-            while (keyInfo.Key != ConsoleKey.Escape);
+            while (true);
 
-            // Print key press log
-            foreach (var item in keyLog)
-            {
-                Console.WriteLine(item);
-            }
-
+            Console.WriteLine("\n\nNice work! Your key press data is being analysed by Google's Gemini AI model...");
             string? practiceText = await geminiApiService.GeminiApiPostRequest(keyLog);
             if (practiceText == null)
             {
                 return;
             }
-            Console.WriteLine(practiceText);
+            Console.WriteLine("\nHere is your personalised typing practice. Please type the following sequence:");            
+            Console.WriteLine("\n" + practiceText);
         }
 
     }
