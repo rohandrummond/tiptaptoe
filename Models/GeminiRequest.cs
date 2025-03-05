@@ -4,23 +4,23 @@ using System.Text.Json.Serialization;
 namespace TipTapToe.Models
 {
     // Gemini API body class
-    public class GeminiBody
+    public class GeminiRequest
     {
         [JsonPropertyName("contents")]
-        public required List<ContentParts> Contents { get; set; } 
+        public required List<RequestParts> Contents { get; set; } 
 
         [JsonPropertyName("generationConfig")]
         public required GenerationConfig Config { get; set; } 
     }
 
     // Gemini API content classes
-    public class ContentParts
+    public class RequestParts
     {
         [JsonPropertyName("parts")]
         public required ArrayList Parts { get; set; }
     }
 
-    public class ContentPart
+    public class RequestPart
     {
         [JsonPropertyName("text")]
         public required string Part { get; set; }

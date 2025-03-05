@@ -145,7 +145,12 @@ namespace TipTapToe
                 Console.WriteLine(item);
             }
 
-            await geminiApiService.GeminiApiPostRequest(keyLog);
+            string? practiceText = await geminiApiService.GeminiApiPostRequest(keyLog);
+            if (practiceText == null)
+            {
+                return;
+            }
+            Console.WriteLine(practiceText);
         }
 
     }

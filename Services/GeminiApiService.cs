@@ -7,7 +7,7 @@ namespace TipTapToe.Services
 {
     public class GeminiApiService
     {
-        public async Task GeminiApiPostRequest(List<LogItem> keyLog)
+        public async Task<string?> GeminiApiPostRequest(List<LogItem> keyLog)
         {
             using HttpClient client = new();
             client.DefaultRequestHeaders.Accept.Clear();
@@ -18,22 +18,22 @@ namespace TipTapToe.Services
             if (geminiApiKey == null)
             {
                 Console.Error.WriteLine("Unable to find Gemini API Key.");
-                return;
+                return null;
             }
             string geminiUri = $"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={geminiApiKey}";
-            GeminiBody geminiBody = new()
+            GeminiRequest requestBody = new()
             {
                 Contents =
                 [
-                    new ContentParts
+                    new RequestParts
                     {
                         Parts =
                         [
-                            new ContentPart
+                            new RequestPart
                             {
                                 Part = "I am building a typing practice tool for programmers. Below is a log of a user's keystrokes while typing code. The log includes key presses, timing data, and potential error patterns. Based on this log, generate a new body of text for the user to practice typing. The text should focus on improving their weaknesses, reinforcing their strengths, and simulating real-world programming tasks."
                             },
-                            new ContentPart
+                            new RequestPart
                             {
                                 Part = JsonSerializer.Serialize(keyLog)
                             }
@@ -62,14 +62,24 @@ namespace TipTapToe.Services
                     }
                 }
             };
-            string jsonString = JsonSerializer.Serialize(geminiBody, new JsonSerializerOptions{
-                WriteIndented = true
-            });
-            Console.WriteLine(jsonString);
-            JsonContent geminiJsonBody = JsonContent.Create(geminiBody);
-            using HttpResponseMessage response = await client.PostAsync(geminiUri, geminiJsonBody);
-            string responseContentString = await response.Content.ReadAsStringAsync();
-            Console.WriteLine(responseContentString);
+            JsonContent requestBodyJson = JsonContent.Create(requestBody);
+            using HttpResponseMessage response = await client.PostAsync(geminiUri, requestBodyJson);
+            string responseContent = await response.Content.ReadAsStringAsync();
+            var responseContentJson = JsonSerializer.Deserialize<GeminiResponse>(responseContent);
+            if (responseContentJson == null)
+            {
+                Console.WriteLine("Error deserializing Gemini API response");
+                return null;
+            }
+            string responseData = responseContentJson.Candidates[0].Content.Parts[0].Part;
+            var responseDataJson = JsonSerializer.Deserialize<List<ResponseText>>(responseData);
+            if (responseDataJson == null || responseDataJson.Count == 0)
+            {
+                Console.WriteLine("Error deserializing Gemini API response data");
+                return null;
+            }
+            string geminiPracticeText = responseDataJson[0].PracticeText;
+            return geminiPracticeText;
         }
     }
 }
