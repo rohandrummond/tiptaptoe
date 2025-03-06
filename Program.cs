@@ -22,7 +22,7 @@ namespace TipTapToe
             Console.WriteLine("\t3 - Java");
             Console.WriteLine("\t4 - C#");
             Console.WriteLine("\t5 - JavaScript");
-            Console.WriteLine("\t6 - test");
+            Console.WriteLine("\t6 - Testing");
             Console.Write("\nWhat would you like to practice? ");
 
             // Read user input and set language/assessment variables
@@ -49,8 +49,8 @@ namespace TipTapToe
                     assessment = "console.log(\"Hello, \" + prompt(\"Enter your name:\") + \"!\");";
                     break;
                 case "6":
-                    language = "test";
-                    assessment = "test";
+                    language = "Testing";
+                    assessment = "testing";
                     break;
                 default:
                     Console.WriteLine("\nYou're off to a bad start, looks like you made a typo. Please try again.\n");
@@ -73,7 +73,6 @@ namespace TipTapToe
             KeyInput keyInput;
             bool? result;
             TimeSpan timeStamp;
-
 
             // User typing assessment prompt
             Console.WriteLine($"\nYou chose {language}. Let's get started with your assessment! Please type the following sequence:\n");
@@ -138,6 +137,11 @@ namespace TipTapToe
                     // Check for correct input 
                     if (pointer == assessment.Length && input == assessment)
                     {
+                        stopWatch.Stop();
+                        stopWatch.Reset();
+                        assessment = "";
+                        input = "";
+                        pointer = 0;
                         break;
                     }
                 }
@@ -148,14 +152,68 @@ namespace TipTapToe
             }
             while (true);
 
+            // Use Gemini Service to analyse key log and prepare custom practice sequence
             Console.WriteLine("\n\nNice work! Your key press data is being analysed by Google's Gemini AI model...");
             string? practiceText = await geminiApiService.GeminiApiPostRequest(keyLog);
             if (practiceText == null)
             {
                 return;
             }
+            assessment = practiceText;
             Console.WriteLine("\nHere is your personalised typing practice. Please type the following sequence:");            
-            Console.WriteLine("\n" + practiceText);
+            Console.WriteLine("\n" + assessment);
+        
+            // Feed custom practice bak to user for WPM tracking
+            do 
+            {
+                keyInfo = Console.ReadKey(false);
+                if (keyInfo.Key != ConsoleKey.Escape)
+                {
+                    if (!stopWatch.IsRunning) {
+                        stopWatch.Start();
+                    }
+                    if (keyInfo.Key == ConsoleKey.Backspace)
+                    {
+                        Console.Write("\b \b");
+                        if (pointer != 0)
+                        {
+                            pointer -= 1;
+                        }
+                        if (input.Length > 0) {
+                            string mutatedString = input.Remove(input.Length - 1);
+                            input = mutatedString; 
+                        }
+                    }
+                    else {
+                        keyInput = new KeyInput(keyInfo.KeyChar);
+                        input += keyInput;
+                        pointer += 1;
+                    }
+                    if (pointer == assessment.Length && input == assessment)
+                    {
+                        
+                        int characterCount = assessment.Length;
+                        double elapsedSeconds = stopWatch.Elapsed.TotalSeconds;
+                        double charactersPerMinute = characterCount / elapsedSeconds * 60;
+                        double wordsPerMinute = charactersPerMinute / 5;
+
+                        Console.WriteLine($"\n\nCongratulations on completing your first practice round! We measured your typing speed as {wordsPerMinute:F2} WPM (Words Per Minute).");
+                        Console.WriteLine("\nFor context, here are some typical WPM benchmarks:");
+                        Console.WriteLine("\n\tSlow: 20 - 40 WPM");
+                        Console.WriteLine("\tAverage: 41 - 60 WPM");
+                        Console.WriteLine("\tFast: 61 - 80 WPM");
+                        Console.WriteLine("\tProfessional: 81 - 100 WPM");
+                        Console.WriteLine("\tElite: 100+ WPM");
+                        break;
+                    }
+                }
+                else
+                {
+                    return;
+                }
+            }
+            while (true);
+            Console.Write($"\nWould you like to continue practicing?");
         }
 
     }
