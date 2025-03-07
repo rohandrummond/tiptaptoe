@@ -83,7 +83,7 @@ namespace TipTapToe.Services
         }
 
         // Prompt for initial assessment
-        public async Task<string> Assess(List<LogItem> keyLog)
+        public async Task<string> Assess(List<LogItem> keyLog, string language)
         {
 
             RequestParts requestParts = new()
@@ -92,7 +92,7 @@ namespace TipTapToe.Services
                 [
                     new RequestPart
                     {
-                        Part = "I am building a typing practice tool for programmers. Below is a log of a user's keystrokes while typing code. The log includes key presses, timing data, and potential error patterns. Based on this log, generate a new body of text for the user to practice typing. The text should focus on improving their weaknesses, reinforcing their strengths, and simulating real-world programming tasks."
+                        Part = $"I am building a console app for programmers to practice typing. Below is a log of a users keystrokes while typing {language} code, including key presses, timing data, and common errors. Based on this log, generate a unique 40-character, single-line sequence that targets their weaknesses while simulating real-world programming syntax."
                     },
                     new RequestPart
                     {
@@ -113,7 +113,7 @@ namespace TipTapToe.Services
                 [
                     new RequestPart
                     {
-                        Part = $"Generate a 20 character unique sequence of characters for typing practice, focusing on programming syntax and patterns commonly used in {language}. The string should be a single line that includes a variety of characters such as letters, numbers, punctuation, and operators, mimicking code structure and real-world coding scenarios."
+                        Part = $"Generate a single-line, 40-character unique sequence of characters for typing practice, focusing on programming syntax and patterns commonly used in {language}. The string should be a single line that includes a variety of characters such as letters, numbers, punctuation, and operators, mimicking code structure and real-world coding scenarios."
                     }
                 ]
             };

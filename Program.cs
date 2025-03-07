@@ -30,23 +30,23 @@ namespace TipTapToe
             {
                 case "1":
                     language = "Python";
-                    assessment = "name = input(\"Enter your name: \") print(\"Hello, \" + name + \"!\")";
+                    assessment = "def func(x): return x*2 if x>0 else -x";
                     break;
                 case "2":
                     language = "C++";
-                    assessment = "#include <iostream>; int main() { std::string n; std::cin >> n; std::cout << \"Hello, \" << n << \"!\"; }";
+                    assessment = "std::vector<int> v={1,2,3};for(auto& x:v)x*=2;";
                     break;
                 case "3":
                     language = "Java";
-                    assessment = "import java.util.*; class Main { public static void main(String[] a) { System.out.println(\"Hello, \" + new Scanner(System.in).nextLine() + \"!\"); } }";
+                    assessment = "int sum(int[] arr){return Arrays.stream(arr).sum();}";
                     break;
                 case "4":
                     language = "C#";
-                    assessment = "using System; class P { static void Main() { Console.WriteLine(\"Hello, \" + Console.ReadLine() + \"!\"); } }";
+                    assessment = "var dict=new Dictionary<string,int>{{\"a\",1},{\"b\",2}};";
                     break;
                 case "5":
                     language = "JavaScript";
-                    assessment = "console.log(\"Hello, \" + prompt(\"Enter your name:\") + \"!\");";
+                    assessment = "const obj={a:1,b:2};Object.keys(obj).forEach(k=>obj[k]*=2);";
                     break;
                 case "6":
                     language = "JavaScript";
@@ -157,7 +157,7 @@ namespace TipTapToe
             string practiceText;
             try
             {
-                practiceText = await geminiApiService.Assess(keyLog);
+                practiceText = await geminiApiService.Assess(keyLog, language);
                 assessment = practiceText;
             }
             catch (InvalidOperationException ex)
@@ -179,10 +179,9 @@ namespace TipTapToe
                 // Generate additional Gemini string if needed
                 if (morePracticeRequested)
                 {
-                    Console.WriteLine("\nHold on a sec while we get your another sequence to practice with...");
+                    Console.WriteLine("\nHold on a sec while we get you another sequence to practice with...");
                     assessment = await geminiApiService.ContinuePractice(language);                    
-                    Console.WriteLine("\nGemini produced the following string:\n");
-                    Console.WriteLine(assessment);
+                    Console.WriteLine("\n" + assessment);
                     morePracticeRequested = false;
                 }
 
@@ -231,11 +230,11 @@ namespace TipTapToe
                         // Log result and benchmarks
                         Console.WriteLine($"\n\nCongratulations on completing your first practice round! We measured your typing speed as {wordsPerMinute:F2} WPM (Words Per Minute).");
                         Console.WriteLine("\nFor context, here are some typical WPM benchmarks:");
-                        Console.WriteLine("\n\tSlow: 20 - 40 WPM");
-                        Console.WriteLine("\tAverage: 41 - 60 WPM");
-                        Console.WriteLine("\tFast: 61 - 80 WPM");
-                        Console.WriteLine("\tProfessional: 81 - 100 WPM");
-                        Console.WriteLine("\tElite: 100+ WPM");
+                        Console.WriteLine("\n\tBeginner: 20 - 30 WPM");
+                        Console.WriteLine("\tIntermediate: 31 - 45 WPM");
+                        Console.WriteLine("\tAverage: 46 - 60 WPM");
+                        Console.WriteLine("\tExpert: 61 - 80 WPM");
+                        Console.WriteLine("\tElite: 80+ WPM");
                         
                         // Ask user whether they would like to continue
                         Console.Write($"\nWould you like to continue practicing? (y/n) ");
