@@ -37,38 +37,3 @@ namespace TipTapToe.Models
     }
 
 }
-
-// {
-//   "candidates": [
-//     {
-//       "content": {
-//         "parts": [
-//           {
-//             "text": "[{\"practiceText\": \"name = \\\"Enter your name here\\\";\\nprint(\\\"Hello, \\\" + name + \\\", how are you today?\\\");\\n\\nprint(\\\"Additional practice:\\\");\\nname = \\\"Jane Doe\\\";\\nprint(name);\\nname = \\\"John Smith\\\";\\nprint(name);\", \"reasoning\": \"This text focuses on improving accuracy with quotes, parentheses, and variable assignments. It also reinforces correct spacing around operators and punctuation. The structure mimics simple print statements frequently encountered in beginner programming.\"}]"
-//           }
-//         ],
-//         "role": "model"
-//       },
-//       "finishReason": "STOP",
-//       "avgLogprobs": -0.33007579014219085
-//     }
-//   ],
-//   "usageMetadata": {
-//     "promptTokenCount": 2273,
-//     "candidatesTokenCount": 116,
-//     "totalTokenCount": 2389,
-//     "promptTokensDetails": [
-//       {
-//         "modality": "TEXT",
-//         "tokenCount": 2273
-//       }
-//     ],
-//     "candidatesTokensDetails": [
-//       {
-//         "modality": "TEXT",
-//         "tokenCount": 116
-//       }
-//     ]
-//   },
-//   "modelVersion": "gemini-1.5-flash"
-// }

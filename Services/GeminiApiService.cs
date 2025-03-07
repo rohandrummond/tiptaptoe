@@ -7,78 +7,117 @@ namespace TipTapToe.Services
 {
     public class GeminiApiService
     {
-        public async Task<string?> GeminiApiPostRequest(List<LogItem> keyLog)
+
+        // Constructor for creating HttpClient instance and Gemini URI 
+        private readonly HttpClient httpClient;
+        private readonly string geminiUri;
+        public GeminiApiService()
         {
-            using HttpClient client = new();
-            client.DefaultRequestHeaders.Accept.Clear();
-            client.DefaultRequestHeaders.Accept.Add(
+            httpClient = new HttpClient();
+            httpClient.DefaultRequestHeaders.Accept.Clear();
+            httpClient.DefaultRequestHeaders.Accept.Add(
                 new MediaTypeWithQualityHeaderValue("application/json")
             );  
             string? geminiApiKey = Environment.GetEnvironmentVariable("GEMINI_API_KEY");
             if (geminiApiKey == null)
             {
-                Console.Error.WriteLine("Unable to find Gemini API Key.");
-                return null;
+                throw new InvalidOperationException("Unable to find Gemini API Key.");
             }
-            string geminiUri = $"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={geminiApiKey}";
-            GeminiRequest requestBody = new()
+            geminiUri = $"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={geminiApiKey}";
+        }
+
+        // API template for making request and handling response
+        public async Task<string> MakeApiRequest(RequestParts requestParts)
+        {
+            try
             {
-                Contents =
-                [
-                    new RequestParts
-                    {
-                        Parts =
-                        [
-                            new RequestPart
-                            {
-                                Part = "I am building a typing practice tool for programmers. Below is a log of a user's keystrokes while typing code. The log includes key presses, timing data, and potential error patterns. Based on this log, generate a new body of text for the user to practice typing. The text should focus on improving their weaknesses, reinforcing their strengths, and simulating real-world programming tasks."
-                            },
-                            new RequestPart
-                            {
-                                Part = JsonSerializer.Serialize(keyLog)
-                            }
-                        ]
-                    }
-                ],
-                Config = new GenerationConfig
+                GeminiRequest requestBody = new()
                 {
-                    ResponseMimeType = "application/json",
-                    ResponseSchema = new ConfigResponseSchema
+                    Contents =
+                    [
+                        requestParts
+                    ],
+                    Config = new GenerationConfig
                     {
-                        Type = "ARRAY",
-                        Items = new ConfigItems
+                        ResponseMimeType = "application/json",
+                        ResponseSchema = new ConfigResponseSchema
                         {
-                            Type = "OBJECT",
-                            Properties = new ConfigProperties
+                            Type = "ARRAY",
+                            Items = new ConfigItems
                             {
-                                Reasoning = new ConfigType{
-                                    Type = "STRING"
-                                },
-                                PracticeText = new ConfigType{
-                                    Type = "STRING"
+                                Type = "OBJECT",
+                                Properties = new ConfigProperties
+                                {
+                                    Reasoning = new ConfigType{
+                                        Type = "STRING"
+                                    },
+                                    PracticeText = new ConfigType{
+                                        Type = "STRING"
+                                    }
                                 }
                             }
                         }
                     }
+                };
+                JsonContent requestBodyJson = JsonContent.Create(requestBody);
+                using HttpResponseMessage response = await httpClient.PostAsync(geminiUri, requestBodyJson);
+                string responseContent = await response.Content.ReadAsStringAsync();
+                var responseContentJson = JsonSerializer.Deserialize<GeminiResponse>(responseContent);
+                if (responseContentJson == null)
+                {
+                    throw new InvalidOperationException("Error deserializing Gemini API response");
                 }
+                string responseData = responseContentJson.Candidates[0].Content.Parts[0].Part;
+                var responseDataJson = JsonSerializer.Deserialize<List<ResponseText>>(responseData);
+                if (responseDataJson == null || responseDataJson.Count == 0)
+                {
+                    throw new InvalidOperationException("Error deserializing data in Gemini API response");
+                }
+                string geminiPracticeText = responseDataJson[0].PracticeText;
+                return geminiPracticeText;
+            }
+            catch (InvalidOperationException)
+            {
+                throw;
+            }
+        }
+
+        // Prompt for initial assessment
+        public async Task<string> Assess(List<LogItem> keyLog)
+        {
+
+            RequestParts requestParts = new()
+            {
+                Parts =
+                [
+                    new RequestPart
+                    {
+                        Part = "I am building a typing practice tool for programmers. Below is a log of a user's keystrokes while typing code. The log includes key presses, timing data, and potential error patterns. Based on this log, generate a new body of text for the user to practice typing. The text should focus on improving their weaknesses, reinforcing their strengths, and simulating real-world programming tasks."
+                    },
+                    new RequestPart
+                    {
+                        Part = JsonSerializer.Serialize(keyLog)
+                    }
+                ]
             };
-            JsonContent requestBodyJson = JsonContent.Create(requestBody);
-            using HttpResponseMessage response = await client.PostAsync(geminiUri, requestBodyJson);
-            string responseContent = await response.Content.ReadAsStringAsync();
-            var responseContentJson = JsonSerializer.Deserialize<GeminiResponse>(responseContent);
-            if (responseContentJson == null)
+            string geminiPracticeText = await MakeApiRequest(requestParts);
+            return geminiPracticeText;
+        }
+
+        // Prompt for generating additional practice sequences
+        public async Task<string> ContinuePractice(string language)
+        {
+            RequestParts requestParts = new()
             {
-                Console.WriteLine("Error deserializing Gemini API response");
-                return null;
-            }
-            string responseData = responseContentJson.Candidates[0].Content.Parts[0].Part;
-            var responseDataJson = JsonSerializer.Deserialize<List<ResponseText>>(responseData);
-            if (responseDataJson == null || responseDataJson.Count == 0)
-            {
-                Console.WriteLine("Error deserializing Gemini API response data");
-                return null;
-            }
-            string geminiPracticeText = responseDataJson[0].PracticeText;
+                Parts =
+                [
+                    new RequestPart
+                    {
+                        Part = $"Generate a 20 character unique sequence of characters for typing practice, focusing on programming syntax and patterns commonly used in {language}. The string should be a single line that includes a variety of characters such as letters, numbers, punctuation, and operators, mimicking code structure and real-world coding scenarios."
+                    }
+                ]
+            };
+            string geminiPracticeText = await MakeApiRequest(requestParts);
             return geminiPracticeText;
         }
     }
