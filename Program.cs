@@ -90,6 +90,18 @@ namespace TipTapToe
             stopWatch.Start();
           }
 
+          // Handle false enters
+          if (keyInfo.Key == ConsoleKey.Enter)
+          {
+            Console.WriteLine("\n\nOops! You either pressed enter by accident or you made a typo. The timer has been reset, start again when you're ready!");
+            stopWatch.Stop();
+            stopWatch.Reset();
+            pointer = 0;
+            input = "";
+            Console.WriteLine($"\n{assessment}");
+            continue;
+          }
+
           // Handle backspace
           if (keyInfo.Key == ConsoleKey.Backspace)
           {
@@ -195,6 +207,18 @@ namespace TipTapToe
           if (!stopWatch.IsRunning)
           {
             stopWatch.Start();
+          }
+
+          // Handle false enters
+          if (keyInfo.Key == ConsoleKey.Enter)
+          {
+            Console.WriteLine("\n\nOops! You either pressed enter by accident or you made a typo. The timer has been reset, start again when you're ready!");
+            stopWatch.Stop();
+            stopWatch.Reset();
+            pointer = 0;
+            input = "";
+            Console.WriteLine($"\n{assessment}");
+            continue;
           }
 
           if (keyInfo.Key == ConsoleKey.Backspace)
