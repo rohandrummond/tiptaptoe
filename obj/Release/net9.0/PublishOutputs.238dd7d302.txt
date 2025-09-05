@@ -1,5 +1,0 @@
-/Users/rohan/Documents/dev/tiptaptoe/bin/Release/net9.0/publish/tiptaptoe
-/Users/rohan/Documents/dev/tiptaptoe/bin/Release/net9.0/publish/tiptaptoe.dll
-/Users/rohan/Documents/dev/tiptaptoe/bin/Release/net9.0/publish/tiptaptoe.deps.json
-/Users/rohan/Documents/dev/tiptaptoe/bin/Release/net9.0/publish/tiptaptoe.runtimeconfig.json
-/Users/rohan/Documents/dev/tiptaptoe/bin/Release/net9.0/publish/tiptaptoe.pdb
