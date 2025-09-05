@@ -4,267 +4,273 @@ using System.Diagnostics;
 
 namespace TipTapToe
 {
-    internal class Program
+  internal class Program
+  {
+    public static async Task Main(string[] args)
     {
-        public static async Task Main(string[] args)
+
+      string assessment = "";
+      string language = "";
+      string input = "";
+      int pointer = 0;
+
+      // User language question
+      Console.WriteLine("\nWelcome to TipTapToe. Let's get practicing!");
+      Console.WriteLine("\nPlease choose an option from the following list:");
+      Console.WriteLine("\n\t1 - Python");
+      Console.WriteLine("\t2 - C++");
+      Console.WriteLine("\t3 - Java");
+      Console.WriteLine("\t4 - C#");
+      Console.WriteLine("\t5 - JavaScript");
+      Console.WriteLine("\t6 - Testing");
+      Console.Write("\nWhat would you like to practice? ");
+
+      // Read user input and set language/assessment variables
+      switch (Console.ReadLine())
+      {
+        case "1":
+          language = "Python";
+          assessment = "def double(n): return n * 2 if n > 0 else -n";
+          break;
+        case "2":
+          language = "C++";
+          assessment = "for (int n : {1, 2, 3}) std::cout << n * 2 << ' ';";
+          break;
+        case "3":
+          language = "Java";
+          assessment = "int total = Arrays.stream(nums).filter(n -> n > 0).sum();";
+          break;
+        case "4":
+          language = "C#";
+          assessment = "var squares = numbers.Select(n => n * n).ToList();";
+          break;
+        case "5":
+          language = "JavaScript";
+          assessment = "const doubled = [1, 2, 3].map(n => n * 2);";
+          break;
+        case "6":
+          language = "JavaScript";
+          assessment = "console.log('Hello, world!');";
+          break;
+        default:
+          Console.WriteLine("\nYou're off to a bad start, looks like you made a typo. Please try again.\n");
+          break;
+      }
+
+      if (assessment.Length == 0)
+      {
+        return;
+      }
+
+      GeminiApiService geminiApiService = new();
+
+      // Key tracking and stopwatch 
+      ConsoleKeyInfo keyInfo;
+      Stopwatch stopWatch = new();
+
+      // Log variables
+      List<LogItem> keyLog = [];
+      KeyInput keyInput;
+      bool? result;
+      TimeSpan timeStamp;
+
+      // User typing assessment prompt
+      Console.WriteLine($"\nYou chose {language}. Let's get started with your assessment! Please type the following sequence:\n");
+      Console.WriteLine(assessment);
+
+      do
+      {
+        keyInfo = Console.ReadKey(false);
+        if (keyInfo.Key != ConsoleKey.Escape)
         {
 
-            string assessment = "";
-            string language = "";
-            string input = "";
-            int pointer = 0;
+          // Start stopwatch
+          if (!stopWatch.IsRunning)
+          {
+            stopWatch.Start();
+          }
 
-            // User language question
-            Console.WriteLine("\nWelcome to TipTapToe. Let's get practicing!");
-            Console.WriteLine("\nPlease choose an option from the following list:");
-            Console.WriteLine("\n\t1 - Python");
-            Console.WriteLine("\t2 - C++");
-            Console.WriteLine("\t3 - Java");
-            Console.WriteLine("\t4 - C#");
-            Console.WriteLine("\t5 - JavaScript");
-            Console.WriteLine("\t6 - Testing");
-            Console.Write("\nWhat would you like to practice? ");
+          // Handle backspace
+          if (keyInfo.Key == ConsoleKey.Backspace)
+          {
+            // Delete character in console
+            Console.Write("\b \b");
 
-            // Read user input and set language/assessment variables
+            // Update pointer
+            if (pointer != 0)
+            {
+              pointer -= 1;
+            }
+
+            // Trim last char from input validation 
+            if (input.Length > 0)
+            {
+              string mutatedString = input.Remove(input.Length - 1);
+              input = mutatedString;
+            }
+
+            // Record result and key press
+            result = null;
+            keyInput = new KeyInput(keyInfo.Key);
+          }
+          else
+          {
+
+            // Record correct or incorrect result
+            if (pointer < assessment.Length && keyInfo.KeyChar == assessment[pointer])
+            {
+              result = true;
+            }
+            else
+            {
+              result = false;
+            }
+
+            // Update input validation and pointer
+            keyInput = new KeyInput(keyInfo.KeyChar);
+            input += keyInput;
+            pointer += 1;
+          }
+
+          // Log key press
+          timeStamp = stopWatch.Elapsed;
+          var logItem = new LogItem(keyInput.ToString(), timeStamp.ToString(), result);
+          keyLog.Add(logItem);
+
+          // Check for correct input 
+          if (pointer == assessment.Length && input == assessment)
+          {
+            stopWatch.Stop();
+            stopWatch.Reset();
+            assessment = "";
+            input = "";
+            pointer = 0;
+            break;
+          }
+        }
+        else
+        {
+          return;
+        }
+      }
+      while (true);
+
+      // Use Gemini Service to analyse key log and prepare custom practice sequence
+      Console.WriteLine("\n\nNice work! Your key press data is being analysed by Google's Gemini AI model...");
+      string practiceText;
+      try
+      {
+        practiceText = await geminiApiService.Assess(keyLog, language);
+        assessment = practiceText;
+      }
+      catch (InvalidOperationException ex)
+      {
+        Console.Error.WriteLine($"Gemini API Error: {ex.Message}");
+      }
+      catch (Exception ex)
+      {
+        Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+      }
+      Console.WriteLine("\nHere is your personalised typing practice. Please type the following sequence:");
+      Console.WriteLine("\n" + assessment);
+
+      // Feed custom practice back to user for WPM tracking
+      bool practicing = true;
+      bool morePracticeRequested = false;
+      do
+      {
+        // Generate additional Gemini string if needed
+        if (morePracticeRequested)
+        {
+          Console.WriteLine("\nHold on a sec while we get you another sequence to practice with...");
+          assessment = await geminiApiService.ContinuePractice(language);
+          Console.WriteLine("\n" + assessment);
+          morePracticeRequested = false;
+        }
+
+        keyInfo = Console.ReadKey(false);
+        if (keyInfo.Key != ConsoleKey.Escape)
+        {
+          // Start stopwatch
+          if (!stopWatch.IsRunning)
+          {
+            stopWatch.Start();
+          }
+
+          if (keyInfo.Key == ConsoleKey.Backspace)
+          {
+            // Delete character in console
+            Console.Write("\b \b");
+
+            // Update pointer
+            if (pointer != 0)
+            {
+              pointer -= 1;
+            }
+
+            // Trim character from input validation
+            if (input.Length > 0)
+            {
+              string mutatedString = input.Remove(input.Length - 1);
+              input = mutatedString;
+            }
+          }
+          else
+          {
+            // Update input validation and pointer
+            keyInput = new KeyInput(keyInfo.KeyChar);
+            input += keyInput;
+            pointer += 1;
+          }
+
+          // Check for correct input
+          if (pointer == assessment.Length && input == assessment)
+          {
+
+            // Calculate WPM
+            int characterCount = assessment.Length;
+            double elapsedSeconds = stopWatch.Elapsed.TotalSeconds;
+            double charactersPerMinute = characterCount / elapsedSeconds * 60;
+            double wordsPerMinute = charactersPerMinute / 5;
+
+            // Log result and benchmarks
+            Console.WriteLine($"\n\nCongratulations on completing your first practice round! We measured your typing speed as {wordsPerMinute:F2} WPM (Words Per Minute).");
+            Console.WriteLine("\nFor context, here are some typical WPM benchmarks:");
+            Console.WriteLine("\n\tBeginner: 20 - 30 WPM");
+            Console.WriteLine("\tIntermediate: 31 - 45 WPM");
+            Console.WriteLine("\tAverage: 46 - 60 WPM");
+            Console.WriteLine("\tExpert: 61 - 80 WPM");
+            Console.WriteLine("\tElite: 80+ WPM");
+
+            // Ask user whether they would like to continue
+            Console.Write($"\nWould you like to continue practicing? (y/n) ");
             switch (Console.ReadLine())
             {
-                case "1":
-                    language = "Python";
-                    assessment = "def func(x): return x*2 if x>0 else -x";
-                    break;
-                case "2":
-                    language = "C++";
-                    assessment = "std::vector<int> v={1,2,3};for(auto& x:v)x*=2;";
-                    break;
-                case "3":
-                    language = "Java";
-                    assessment = "int sum(int[] arr){return Arrays.stream(arr).sum();}";
-                    break;
-                case "4":
-                    language = "C#";
-                    assessment = "var dict=new Dictionary<string,int>{{\"a\",1},{\"b\",2}};";
-                    break;
-                case "5":
-                    language = "JavaScript";
-                    assessment = "const obj={a:1,b:2};Object.keys(obj).forEach(k=>obj[k]*=2);";
-                    break;
-                case "6":
-                    language = "JavaScript";
-                    assessment = "console.log(\"hello\");";
-                    break;
-                default:
-                    Console.WriteLine("\nYou're off to a bad start, looks like you made a typo. Please try again.\n");
-                    break;
+              case "y" or "Y" or "yes" or "YES":
+                stopWatch.Stop();
+                stopWatch.Reset();
+                assessment = "";
+                input = "";
+                pointer = 0;
+                morePracticeRequested = true;
+                break;
+              case "n" or "N" or "no" or "NO":
+                Console.WriteLine("\nNo problem, see you next time!\n");
+                practicing = false;
+                break;
+              default:
+                Console.WriteLine("\nWe didn't recognise that input, so we'll call it here. See you next time!\n");
+                practicing = false;
+                break;
             }
-
-            if (assessment.Length == 0)
-            {
-                return;
-            }
-
-            GeminiApiService geminiApiService = new();
-
-            // Key tracking and stopwatch 
-            ConsoleKeyInfo keyInfo;
-            Stopwatch stopWatch = new();
-
-            // Log variables
-            List<LogItem> keyLog = [];
-            KeyInput keyInput;
-            bool? result;
-            TimeSpan timeStamp;
-
-            // User typing assessment prompt
-            Console.WriteLine($"\nYou chose {language}. Let's get started with your assessment! Please type the following sequence:\n");
-            Console.WriteLine(assessment);
-
-            do 
-            {
-                keyInfo = Console.ReadKey(false);
-                if (keyInfo.Key != ConsoleKey.Escape)
-                {
-
-                    // Start stopwatch
-                    if (!stopWatch.IsRunning) {
-                        stopWatch.Start();
-                    }
-
-                    // Handle backspace
-                    if (keyInfo.Key == ConsoleKey.Backspace)
-                    {
-                        // Delete character in console
-                        Console.Write("\b \b");
-
-                        // Update pointer
-                        if (pointer != 0)
-                        {
-                            pointer -= 1;
-                        }
-
-                        // Trim last char from input validation 
-                        if (input.Length > 0) {
-                            string mutatedString = input.Remove(input.Length - 1);
-                            input = mutatedString; 
-                        }
-
-                        // Record result and key press
-                        result = null;
-                        keyInput = new KeyInput(keyInfo.Key);
-                    }
-                    else {
-
-                        // Record correct or incorrect result
-                        if (pointer < assessment.Length && keyInfo.KeyChar == assessment[pointer])
-                        {
-                            result = true;
-                        }
-                        else
-                        {
-                            result = false;
-                        }
-
-                        // Update input validation and pointer
-                        keyInput = new KeyInput(keyInfo.KeyChar);
-                        input += keyInput;
-                        pointer += 1;
-                    }
-
-                    // Log key press
-                    timeStamp = stopWatch.Elapsed;
-                    var logItem = new LogItem(keyInput.ToString(), timeStamp.ToString(), result);
-                    keyLog.Add(logItem);
-
-                    // Check for correct input 
-                    if (pointer == assessment.Length && input == assessment)
-                    {
-                        stopWatch.Stop();
-                        stopWatch.Reset();
-                        assessment = "";
-                        input = "";
-                        pointer = 0;
-                        break;
-                    }
-                }
-                else
-                {
-                    return;
-                }
-            }
-            while (true);
-
-            // Use Gemini Service to analyse key log and prepare custom practice sequence
-            Console.WriteLine("\n\nNice work! Your key press data is being analysed by Google's Gemini AI model...");
-            string practiceText;
-            try
-            {
-                practiceText = await geminiApiService.Assess(keyLog, language);
-                assessment = practiceText;
-            }
-            catch (InvalidOperationException ex)
-            {
-                Console.Error.WriteLine($"Gemini API Error: {ex.Message}");
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Unexpected error: {ex.Message}");
-            }
-            Console.WriteLine("\nHere is your personalised typing practice. Please type the following sequence:");            
-            Console.WriteLine("\n" + assessment);
-        
-            // Feed custom practice back to user for WPM tracking
-            bool practicing = true;
-            bool morePracticeRequested = false;
-            do 
-            {
-                // Generate additional Gemini string if needed
-                if (morePracticeRequested)
-                {
-                    Console.WriteLine("\nHold on a sec while we get you another sequence to practice with...");
-                    assessment = await geminiApiService.ContinuePractice(language);                    
-                    Console.WriteLine("\n" + assessment);
-                    morePracticeRequested = false;
-                }
-
-                keyInfo = Console.ReadKey(false);
-                if (keyInfo.Key != ConsoleKey.Escape)
-                {
-                    // Start stopwatch
-                    if (!stopWatch.IsRunning) {
-                        stopWatch.Start();
-                    }
-
-                    if (keyInfo.Key == ConsoleKey.Backspace)
-                    {
-                        // Delete character in console
-                        Console.Write("\b \b");
-
-                        // Update pointer
-                        if (pointer != 0)
-                        {
-                            pointer -= 1;
-                        }
-
-                        // Trim character from input validation
-                        if (input.Length > 0) {
-                            string mutatedString = input.Remove(input.Length - 1);
-                            input = mutatedString; 
-                        }
-                    }
-                    else {
-                        // Update input validation and pointer
-                        keyInput = new KeyInput(keyInfo.KeyChar);
-                        input += keyInput;
-                        pointer += 1;
-                    }
-
-                    // Check for correct input
-                    if (pointer == assessment.Length && input == assessment)
-                    {
-                        
-                        // Calculate WPM
-                        int characterCount = assessment.Length;
-                        double elapsedSeconds = stopWatch.Elapsed.TotalSeconds;
-                        double charactersPerMinute = characterCount / elapsedSeconds * 60;
-                        double wordsPerMinute = charactersPerMinute / 5;
-
-                        // Log result and benchmarks
-                        Console.WriteLine($"\n\nCongratulations on completing your first practice round! We measured your typing speed as {wordsPerMinute:F2} WPM (Words Per Minute).");
-                        Console.WriteLine("\nFor context, here are some typical WPM benchmarks:");
-                        Console.WriteLine("\n\tBeginner: 20 - 30 WPM");
-                        Console.WriteLine("\tIntermediate: 31 - 45 WPM");
-                        Console.WriteLine("\tAverage: 46 - 60 WPM");
-                        Console.WriteLine("\tExpert: 61 - 80 WPM");
-                        Console.WriteLine("\tElite: 80+ WPM");
-                        
-                        // Ask user whether they would like to continue
-                        Console.Write($"\nWould you like to continue practicing? (y/n) ");
-                        switch (Console.ReadLine())
-                        {
-                            case "y" or "Y" or "yes" or "YES":
-                                stopWatch.Stop();
-                                stopWatch.Reset();
-                                assessment = "";
-                                input = "";
-                                pointer = 0;
-                                morePracticeRequested = true;
-                                break;
-                            case "n" or "N" or "no" or "NO":
-                                Console.WriteLine("\nNo problem, see you next time!\n");
-                                practicing = false;
-                                break;
-                            default:
-                                Console.WriteLine("\nWe didn't recognise that input, so we'll call it here. See you next time!\n");
-                                practicing = false;
-                                break;
-                        }
-                    }
-                }
-                else
-                {
-                    return;
-                }
-            }
-            while (practicing);
+          }
         }
+        else
+        {
+          return;
+        }
+      }
+      while (practicing);
     }
+  }
 }

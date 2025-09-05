@@ -5,120 +5,154 @@ using TipTapToe.Models;
 
 namespace TipTapToe.Services
 {
-    public class GeminiApiService
+  public class GeminiApiService
+  {
+
+    // Constructor for creating HttpClient instance and Gemini URI 
+    private readonly HttpClient httpClient;
+    private readonly string geminiUri;
+    public GeminiApiService()
     {
+      httpClient = new HttpClient();
+      httpClient.DefaultRequestHeaders.Accept.Clear();
+      httpClient.DefaultRequestHeaders.Accept.Add(
+          new MediaTypeWithQualityHeaderValue("application/json")
+      );
+      string? geminiApiKey = Environment.GetEnvironmentVariable("GEMINI_API_KEY");
+      if (geminiApiKey == null)
+      {
+        throw new InvalidOperationException("Unable to find Gemini API Key.");
+      }
+      geminiUri = $"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={geminiApiKey}";
+    }
 
-        // Constructor for creating HttpClient instance and Gemini URI 
-        private readonly HttpClient httpClient;
-        private readonly string geminiUri;
-        public GeminiApiService()
+    // Simplified test request without structured output
+    public async Task<string> TestRequest()
+    {
+      Console.WriteLine("SimpleTestRequest is running in GeminiApiService.cs");
+      try
+      {
+        var simpleRequest = new
         {
-            httpClient = new HttpClient();
-            httpClient.DefaultRequestHeaders.Accept.Clear();
-            httpClient.DefaultRequestHeaders.Accept.Add(
-                new MediaTypeWithQualityHeaderValue("application/json")
-            );  
-            string? geminiApiKey = Environment.GetEnvironmentVariable("GEMINI_API_KEY");
-            if (geminiApiKey == null)
+          contents = new[]
+          {
+            new
             {
-                throw new InvalidOperationException("Unable to find Gemini API Key.");
-            }
-            geminiUri = $"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={geminiApiKey}";
-        }
-
-        // API template for making request and handling response
-        public async Task<string> MakeApiRequest(RequestParts requestParts)
-        {
-            try
-            {
-                GeminiRequest requestBody = new()
+                parts = new[]
                 {
-                    Contents =
-                    [
-                        requestParts
-                    ],
-                    Config = new GenerationConfig
-                    {
-                        ResponseMimeType = "application/json",
-                        ResponseSchema = new ConfigResponseSchema
-                        {
-                            Type = "ARRAY",
-                            Items = new ConfigItems
-                            {
-                                Type = "OBJECT",
-                                Properties = new ConfigProperties
-                                {
-                                    Reasoning = new ConfigType{
-                                        Type = "STRING"
-                                    },
-                                    PracticeText = new ConfigType{
-                                        Type = "STRING"
-                                    }
-                                }
-                            }
-                        }
-                    }
-                };
-                JsonContent requestBodyJson = JsonContent.Create(requestBody);
-                using HttpResponseMessage response = await httpClient.PostAsync(geminiUri, requestBodyJson);
-                string responseContent = await response.Content.ReadAsStringAsync();
-                var responseContentJson = JsonSerializer.Deserialize<GeminiResponse>(responseContent);
-                if (responseContentJson == null)
-                {
-                    throw new InvalidOperationException("Error deserializing Gemini API response");
+                    new { text = "Explain how AI works in a few words" }
                 }
-                string responseData = responseContentJson.Candidates[0].Content.Parts[0].Part;
-                var responseDataJson = JsonSerializer.Deserialize<List<ResponseText>>(responseData);
-                if (responseDataJson == null || responseDataJson.Count == 0)
-                {
-                    throw new InvalidOperationException("Error deserializing data in Gemini API response");
-                }
-                string geminiPracticeText = responseDataJson[0].PracticeText;
-                return geminiPracticeText;
             }
-            catch (InvalidOperationException)
-            {
-                throw;
-            }
-        }
+          }
+        };
+        JsonContent requestBodyJson = JsonContent.Create(simpleRequest);
+        using HttpResponseMessage response = await httpClient.PostAsync(geminiUri, requestBodyJson);
+        string responseContent = await response.Content.ReadAsStringAsync();
+        Console.WriteLine($"Status: {response.StatusCode}");
+        Console.WriteLine($"Response: {responseContent}");
+        return responseContent;
+      }
+      catch (Exception ex)
+      {
+        Console.WriteLine($"Error: {ex.Message}");
+        throw;
+      }
+    }
 
-        // Prompt for initial assessment
-        public async Task<string> Assess(List<LogItem> keyLog, string language)
+    // API template for making request and handling response
+    public async Task<string> MakeApiRequest(RequestParts requestParts)
+    {
+      try
+      {
+        GeminiRequest requestBody = new()
         {
-
-            RequestParts requestParts = new()
+          Contents =
+            [
+                requestParts
+            ],
+          Config = new GenerationConfig
+          {
+            ResponseMimeType = "application/json",
+            ResponseSchema = new ConfigResponseSchema
             {
-                Parts =
-                [
-                    new RequestPart
+              Type = "ARRAY",
+              Items = new ConfigItems
+              {
+                Type = "OBJECT",
+                Properties = new ConfigProperties
+                {
+                  Reasoning = new ConfigType
+                  {
+                    Type = "STRING"
+                  },
+                  PracticeText = new ConfigType
+                  {
+                    Type = "STRING"
+                  }
+                }
+              }
+            }
+          }
+        };
+        JsonContent requestBodyJson = JsonContent.Create(requestBody);
+        using HttpResponseMessage response = await httpClient.PostAsync(geminiUri, requestBodyJson);
+        string responseContent = await response.Content.ReadAsStringAsync();
+        var responseContentJson = JsonSerializer.Deserialize<GeminiResponse>(responseContent);
+        if (responseContentJson == null)
+        {
+          throw new InvalidOperationException("Error deserializing Gemini API response");
+        }
+        string responseData = responseContentJson.Candidates[0].Content.Parts[0].Part;
+        var responseDataJson = JsonSerializer.Deserialize<List<ResponseText>>(responseData);
+        if (responseDataJson == null || responseDataJson.Count == 0)
+        {
+          throw new InvalidOperationException("Error deserializing data in Gemini API response");
+        }
+        string geminiPracticeText = responseDataJson[0].PracticeText;
+        return geminiPracticeText;
+      }
+      catch (InvalidOperationException)
+      {
+        throw;
+      }
+    }
+
+    // Prompt for initial assessment
+    public async Task<string> Assess(List<LogItem> keyLog, string language)
+    {
+      RequestParts requestParts = new()
+      {
+        Parts =
+          [
+              new RequestPart
                     {
-                        Part = $"I am building a console app for programmers to practice typing. Below is a log of a users keystrokes while typing {language} code, including key presses, timing data, and common errors. Based on this log, generate a unique 40-character, single-line sequence that targets their weaknesses while simulating real-world programming syntax."
+                        Part = $"You're a typing coach for {language} developers. Analyse this keystroke data for slow transitions (>150ms between keystrokes) and error patterns (backspace usage). Generate a unique single-line code snippet for {language} that is exactly 40 characters long, not including spaces. The code should be readable with valid spacing, syntax, meaningful variable or function names, and realistic patterns typical for {language}. Ensure the snippet does not exactly match any previous sequences in the log."
                     },
                     new RequestPart
                     {
                         Part = JsonSerializer.Serialize(keyLog)
                     }
-                ]
-            };
-            string geminiPracticeText = await MakeApiRequest(requestParts);
-            return geminiPracticeText;
-        }
-
-        // Prompt for generating additional practice sequences
-        public async Task<string> ContinuePractice(string language)
-        {
-            RequestParts requestParts = new()
-            {
-                Parts =
-                [
-                    new RequestPart
-                    {
-                        Part = $"Generate a single-line, 40-character unique sequence of characters for typing practice, focusing on programming syntax and patterns commonly used in {language}. The string should be a single line that includes a variety of characters such as letters, numbers, punctuation, and operators, mimicking code structure and real-world coding scenarios."
-                    }
-                ]
-            };
-            string geminiPracticeText = await MakeApiRequest(requestParts);
-            return geminiPracticeText;
-        }
+          ]
+      };
+      string geminiPracticeText = await MakeApiRequest(requestParts);
+      return geminiPracticeText;
     }
+
+    // Prompt for generating additional practice sequences
+    public async Task<string> ContinuePractice(string language)
+    {
+      RequestParts requestParts = new()
+      {
+        Parts =
+          [
+              new RequestPart
+                    {
+                        Part = $"You're a typing coach for {language} developers. Generate a unique single-line code snippet for {language} that is exactly 40 characters long, not including spaces. The code should be readble with valid spacing, syntax, meaningful variable or function names, and realistic patterns typical for {language}."
+                    }
+          ]
+      };
+      string geminiPracticeText = await MakeApiRequest(requestParts);
+      return geminiPracticeText;
+    }
+  }
 }
