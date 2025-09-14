@@ -117,6 +117,23 @@ namespace TipTapToe.Services
       }
     }
 
+    // Prompt for generating assessment string
+    public async Task<string> GenerateAssessment(string language)
+    {
+      RequestParts requestParts = new()
+      {
+        Parts = [
+          new RequestPart
+          {
+            Part = $"You're a typing coach for {language} developers. Generate a unique sequence of {language} code that will be used to assess their current typing skills. It MUST be a single line, that is 40-50 characters long, with only single spaces. The code should be readable with valid spacing, syntax, meaningful variable or function names, and realistic patterns typical for {language}."
+          }
+
+        ]
+      };
+      string geminiPracticeText = await MakeApiRequest(requestParts);
+      return geminiPracticeText;
+    }
+
     // Prompt for initial assessment
     public async Task<string> Assess(List<LogItem> keyLog, string language)
     {
@@ -126,7 +143,7 @@ namespace TipTapToe.Services
           [
               new RequestPart
                     {
-                        Part = $"You're a typing coach for {language} developers. Analyse this keystroke data for slow transitions (>150ms between keystrokes) and error patterns (backspace usage). Generate a unique single-line code snippet for {language} that is exactly 40 characters long, not including spaces. The code should be readable with valid spacing, syntax, meaningful variable or function names, and realistic patterns typical for {language}. Ensure the snippet does not exactly match any previous sequences in the log."
+                        Part = $"You're a typing coach for {language} developers. Analyse this keystroke data for slow transitions (>150ms between keystrokes) and error patterns (backspace usage). Based on the keystroke data, generate a unique line of {language} code for your studen to practice with. It MUST be a single line, that is 40-50 characters long, with only single spaces, that is different to what is in the keystroke data. The code should be readable with valid spacing, syntax, meaningful variable or function names, and realistic patterns typical for {language}."
                     },
                     new RequestPart
                     {

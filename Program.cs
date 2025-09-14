@@ -14,6 +14,9 @@ namespace TipTapToe
       string input = "";
       int pointer = 0;
 
+      GeminiApiService geminiApiService = new();
+
+
       // User language question
       Console.WriteLine("\nWelcome to TipTapToe. Let's get practicing!");
       Console.WriteLine("\nPlease choose an option from the following list:");
@@ -30,39 +33,45 @@ namespace TipTapToe
       {
         case "1":
           language = "Python";
-          assessment = "def double(n): return n * 2 if n > 0 else -n";
           break;
         case "2":
           language = "C++";
-          assessment = "for (int n : {1, 2, 3}) std::cout << n * 2 << ' ';";
           break;
         case "3":
           language = "Java";
-          assessment = "int total = Arrays.stream(nums).filter(n -> n > 0).sum();";
           break;
         case "4":
           language = "C#";
-          assessment = "var squares = numbers.Select(n => n * n).ToList();";
           break;
         case "5":
           language = "JavaScript";
-          assessment = "const doubled = [1, 2, 3].map(n => n * 2);";
           break;
         case "6":
           language = "JavaScript";
-          assessment = "console.log('Hello, world!');";
           break;
         default:
           Console.WriteLine("\nYou're off to a bad start, looks like you made a typo. Please try again.\n");
           break;
       }
 
+      Console.WriteLine($"\nHold on a sec while we generate a custom {language} sequence to assess your typing...\n");
+      try
+      {
+        assessment = await geminiApiService.GenerateAssessment(language);
+      }
+      catch (InvalidOperationException ex)
+      {
+        Console.Error.WriteLine($"Gemini API Error: {ex.Message}");
+      }
+      catch (Exception ex)
+      {
+        Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+      }
+
       if (assessment.Length == 0)
       {
         return;
       }
-
-      GeminiApiService geminiApiService = new();
 
       // Key tracking and stopwatch 
       ConsoleKeyInfo keyInfo;
@@ -75,7 +84,6 @@ namespace TipTapToe
       TimeSpan timeStamp;
 
       // User typing assessment prompt
-      Console.WriteLine($"\nYou chose {language}. Let's get started with your assessment! Please type the following sequence:\n");
       Console.WriteLine(assessment);
 
       do
@@ -83,7 +91,6 @@ namespace TipTapToe
         keyInfo = Console.ReadKey(false);
         if (keyInfo.Key != ConsoleKey.Escape)
         {
-
           // Start stopwatch
           if (!stopWatch.IsRunning)
           {
@@ -149,6 +156,9 @@ namespace TipTapToe
           var logItem = new LogItem(keyInput.ToString(), timeStamp.ToString(), result);
           keyLog.Add(logItem);
 
+          // Console.WriteLine($"\nassessment is currently: {assessment}\n");
+          // Console.WriteLine($"\ninput is currently: {input}\n");
+
           // Check for correct input 
           if (pointer == assessment.Length && input == assessment)
           {
@@ -169,11 +179,9 @@ namespace TipTapToe
 
       // Use Gemini Service to analyse key log and prepare custom practice sequence
       Console.WriteLine("\n\nNice work! Your key press data is being analysed by Google's Gemini AI model...");
-      string practiceText;
       try
       {
-        practiceText = await geminiApiService.Assess(keyLog, language);
-        assessment = practiceText;
+        assessment = await geminiApiService.Assess(keyLog, language);
       }
       catch (InvalidOperationException ex)
       {
