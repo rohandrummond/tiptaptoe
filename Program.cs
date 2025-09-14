@@ -16,16 +16,16 @@ namespace TipTapToe
 
       GeminiApiService geminiApiService = new();
 
+      await geminiApiService.TestRequest();
 
       // User language question
-      Console.WriteLine("\nWelcome to TipTapToe. Let's get practicing!");
+      Console.WriteLine("\nWelcome to Tip Tap Toe. Let's get practicing!");
       Console.WriteLine("\nPlease choose an option from the following list:");
       Console.WriteLine("\n\t1 - Python");
       Console.WriteLine("\t2 - C++");
       Console.WriteLine("\t3 - Java");
       Console.WriteLine("\t4 - C#");
       Console.WriteLine("\t5 - JavaScript");
-      Console.WriteLine("\t6 - Testing");
       Console.Write("\nWhat would you like to practice? ");
 
       // Read user input and set language/assessment variables
