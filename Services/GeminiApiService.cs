@@ -125,7 +125,7 @@ namespace TipTapToe.Services
         Parts = [
           new RequestPart
           {
-            Part = $"You're a typing coach for {language} developers. Generate a unique sequence of {language} code that will be used to assess their current typing skills. It MUST be a single line, that is 40-50 characters long, with only single spaces. The code should be readable with valid spacing, syntax, meaningful variable or function names, and realistic patterns typical for {language}."
+            Part = $"You're a typing coach for {language} developers. Generate a unique sequence of {language} code that will be used to assess their current typing skills. The code should be readable with valid spacing, syntax, meaningful variable or function names, and realistic patterns typical for {language}. It MUST be a single line, that is 40-50 characters long, with only single spaces."
           }
 
         ]
@@ -135,7 +135,7 @@ namespace TipTapToe.Services
     }
 
     // Prompt for initial assessment
-    public async Task<string> Assess(List<LogItem> keyLog, string language)
+    public async Task<string> GeneratePractice(List<LogItem> keyLog, string language)
     {
       RequestParts requestParts = new()
       {
@@ -143,7 +143,7 @@ namespace TipTapToe.Services
           [
               new RequestPart
                     {
-                        Part = $"You're a typing coach for {language} developers. Analyse this keystroke data for slow transitions (>150ms between keystrokes) and error patterns (backspace usage). Based on the keystroke data, generate a unique line of {language} code for your studen to practice with. It MUST be a single line, that is 40-50 characters long, with only single spaces, that is different to what is in the keystroke data. The code should be readable with valid spacing, syntax, meaningful variable or function names, and realistic patterns typical for {language}."
+                        Part = $"You're a typing coach for {language} developers. Analyse this keystroke data for slow transitions (>150ms between keystrokes) and error patterns (backspace usage). Based on the keystroke data, generate a unique line of {language} code for your student to practice with. The code should be readable with valid spacing, syntax, meaningful variable or function names, and realistic patterns typical for {language}. It MUST be a single line, that is 40-50 characters long, with only single spaces, that is completely different to what is in the keystroke data."
                     },
                     new RequestPart
                     {
@@ -155,21 +155,5 @@ namespace TipTapToe.Services
       return geminiPracticeText;
     }
 
-    // Prompt for generating additional practice sequences
-    public async Task<string> ContinuePractice(string language)
-    {
-      RequestParts requestParts = new()
-      {
-        Parts =
-          [
-              new RequestPart
-                    {
-                        Part = $"You're a typing coach for {language} developers. Generate a unique single-line code snippet for {language} that is exactly 40 characters long, not including spaces. The code should be readble with valid spacing, syntax, meaningful variable or function names, and realistic patterns typical for {language}."
-                    }
-          ]
-      };
-      string geminiPracticeText = await MakeApiRequest(requestParts);
-      return geminiPracticeText;
-    }
   }
 }

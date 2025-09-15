@@ -16,8 +16,6 @@ namespace TipTapToe
 
       GeminiApiService geminiApiService = new();
 
-      await geminiApiService.TestRequest();
-
       // User language question
       Console.WriteLine("\nWelcome to Tip Tap Toe. Let's get practicing!");
       Console.WriteLine("\nPlease choose an option from the following list:");
@@ -44,9 +42,6 @@ namespace TipTapToe
           language = "C#";
           break;
         case "5":
-          language = "JavaScript";
-          break;
-        case "6":
           language = "JavaScript";
           break;
         default:
@@ -156,9 +151,6 @@ namespace TipTapToe
           var logItem = new LogItem(keyInput.ToString(), timeStamp.ToString(), result);
           keyLog.Add(logItem);
 
-          // Console.WriteLine($"\nassessment is currently: {assessment}\n");
-          // Console.WriteLine($"\ninput is currently: {input}\n");
-
           // Check for correct input 
           if (pointer == assessment.Length && input == assessment)
           {
@@ -181,7 +173,7 @@ namespace TipTapToe
       Console.WriteLine("\n\nNice work! Your key press data is being analysed by Google's Gemini AI model...");
       try
       {
-        assessment = await geminiApiService.Assess(keyLog, language);
+        assessment = await geminiApiService.GeneratePractice(keyLog, language);
       }
       catch (InvalidOperationException ex)
       {
@@ -191,6 +183,10 @@ namespace TipTapToe
       {
         Console.Error.WriteLine($"Unexpected error: {ex.Message}");
       }
+
+      // Clear keylog ready to be tracked again
+      keyLog = [];
+
       Console.WriteLine("\nHere is your personalised typing practice. Please type the following sequence:");
       Console.WriteLine("\n" + assessment);
 
@@ -203,7 +199,11 @@ namespace TipTapToe
         if (morePracticeRequested)
         {
           Console.WriteLine("\nHold on a sec while we get you another sequence to practice with...");
-          assessment = await geminiApiService.ContinuePractice(language);
+          assessment = await geminiApiService.GeneratePractice(keyLog, language);
+
+          // Keylog should be cleared in preparation for new round
+          keyLog = []; 
+
           Console.WriteLine("\n" + assessment);
           morePracticeRequested = false;
         }
@@ -220,6 +220,11 @@ namespace TipTapToe
           // Handle false enters
           if (keyInfo.Key == ConsoleKey.Enter)
           {
+            Console.WriteLine($"\ninput is: {input}\n");
+            Console.WriteLine($"\nassessment is: {assessment}\n");
+            Console.WriteLine($"\npointer is: {pointer}\n");
+            Console.WriteLine($"\nassessment/length is: {assessment.Length}\n");
+
             Console.WriteLine("\n\nOops! You either pressed enter by accident or you made a typo. The timer has been reset, start again when you're ready!");
             stopWatch.Stop();
             stopWatch.Reset();
@@ -246,14 +251,35 @@ namespace TipTapToe
               string mutatedString = input.Remove(input.Length - 1);
               input = mutatedString;
             }
+
+            // Record result and key press
+            result = null;
+            keyInput = new KeyInput(keyInfo.Key);
+            
           }
           else
           {
+
+            // Record correct or incorrect result
+            if (pointer < assessment.Length && keyInfo.KeyChar == assessment[pointer])
+            {
+              result = true;
+            }
+            else
+            {
+              result = false;
+            }
+
             // Update input validation and pointer
             keyInput = new KeyInput(keyInfo.KeyChar);
             input += keyInput;
             pointer += 1;
           }
+
+          // Log key press
+          timeStamp = stopWatch.Elapsed;
+          var logItem = new LogItem(keyInput.ToString(), timeStamp.ToString(), result);
+          keyLog.Add(logItem);
 
           // Check for correct input
           if (pointer == assessment.Length && input == assessment)
