@@ -8,7 +8,6 @@ namespace TipTapToe
   {
     public static async Task Main(string[] args)
     {
-
       string assessment = "";
       string language = "";
       string input = "";
@@ -50,17 +49,14 @@ namespace TipTapToe
       }
 
       Console.WriteLine($"\nHold on a sec while we generate a custom {language} sequence to assess your typing...\n");
+
       try
       {
         assessment = await geminiApiService.GenerateAssessment(language);
       }
-      catch (InvalidOperationException ex)
-      {
-        Console.Error.WriteLine($"Gemini API Error: {ex.Message}");
-      }
       catch (Exception ex)
       {
-        Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+        Console.WriteLine($"Unexpected error when calling GenerateAssessment: {ex}");
       }
 
       if (assessment.Length == 0)
@@ -175,13 +171,9 @@ namespace TipTapToe
       {
         assessment = await geminiApiService.GeneratePractice(keyLog, language);
       }
-      catch (InvalidOperationException ex)
-      {
-        Console.Error.WriteLine($"Gemini API Error: {ex.Message}");
-      }
       catch (Exception ex)
       {
-        Console.Error.WriteLine($"Unexpected error: {ex.Message}");
+        Console.Error.WriteLine($"Unexpected error when calling GeneratePractice: {ex.Message}");
       }
 
       // Clear keylog ready to be tracked again
@@ -255,7 +247,7 @@ namespace TipTapToe
             // Record result and key press
             result = null;
             keyInput = new KeyInput(keyInfo.Key);
-            
+
           }
           else
           {

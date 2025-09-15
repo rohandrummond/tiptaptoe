@@ -54,7 +54,7 @@ namespace TipTapToe.Services
       }
       catch (Exception ex)
       {
-        Console.WriteLine($"Error: {ex.Message}");
+        Console.WriteLine($"Unexpected error: {ex}");
         throw;
       }
     }
@@ -97,21 +97,28 @@ namespace TipTapToe.Services
         JsonContent requestBodyJson = JsonContent.Create(requestBody);
         using HttpResponseMessage response = await httpClient.PostAsync(geminiUri, requestBodyJson);
         string responseContent = await response.Content.ReadAsStringAsync();
-        var responseContentJson = JsonSerializer.Deserialize<GeminiResponse>(responseContent);
-        if (responseContentJson == null)
+        if (response.IsSuccessStatusCode)
         {
-          throw new InvalidOperationException("Error deserializing Gemini API response");
+          var responseContentJson = JsonSerializer.Deserialize<GeminiResponse>(responseContent);
+          if (responseContentJson == null)
+          {
+            throw new InvalidOperationException("Error deserializing Gemini API response");
+          }
+          string responseData = responseContentJson.Candidates[0].Content.Parts[0].Part;
+          var responseDataJson = JsonSerializer.Deserialize<List<ResponseText>>(responseData);
+          if (responseDataJson == null || responseDataJson.Count == 0)
+          {
+            throw new InvalidOperationException("Error deserializing data in Gemini API response");
+          }
+          string geminiPracticeText = responseDataJson[0].PracticeText;
+          return geminiPracticeText;
         }
-        string responseData = responseContentJson.Candidates[0].Content.Parts[0].Part;
-        var responseDataJson = JsonSerializer.Deserialize<List<ResponseText>>(responseData);
-        if (responseDataJson == null || responseDataJson.Count == 0)
+        else
         {
-          throw new InvalidOperationException("Error deserializing data in Gemini API response");
+          throw new HttpRequestException($"Gemini API request failed. Status: {response.StatusCode}. Body: {responseContent}");
         }
-        string geminiPracticeText = responseDataJson[0].PracticeText;
-        return geminiPracticeText;
       }
-      catch (InvalidOperationException)
+      catch
       {
         throw;
       }
