@@ -212,11 +212,6 @@ namespace TipTapToe
           // Handle false enters
           if (keyInfo.Key == ConsoleKey.Enter)
           {
-            Console.WriteLine($"\ninput is: {input}\n");
-            Console.WriteLine($"\nassessment is: {assessment}\n");
-            Console.WriteLine($"\npointer is: {pointer}\n");
-            Console.WriteLine($"\nassessment/length is: {assessment.Length}\n");
-
             Console.WriteLine("\n\nOops! You either pressed enter by accident or you made a typo. The timer has been reset, start again when you're ready!");
             stopWatch.Stop();
             stopWatch.Reset();

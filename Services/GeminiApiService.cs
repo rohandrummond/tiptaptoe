@@ -23,7 +23,7 @@ namespace TipTapToe.Services
       {
         throw new InvalidOperationException("Unable to find Gemini API Key.");
       }
-      geminiUri = $"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={geminiApiKey}";
+      geminiUri = $"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={geminiApiKey}";
     }
 
     // Simplified test request without structured output
