@@ -4,3 +4,7 @@ _ReSharper.*
 /bin
 /obj
 /packages
+
+# Claude
+CLAUDE.md
+PLAN.md

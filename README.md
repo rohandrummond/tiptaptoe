@@ -1,45 +1,86 @@
-# Tip Tap Toe&nbsp; 👨‍💻
+# Tip Tap Toe ⌨️
 
-AI powered console app built using .NET and Google Gemini.
+![Tip Tap Toe Screenshots](https://github.com/rohandrummond/tiptaptoe/blob/main/Assets/tip-tap-toe-screenshots.png?raw=true)
 
-Tip Tap Toe is a console application built for software engineers and developers who want language-specific practice for improving their typing speed. It uses Google's Gemini AI model to analyse user keystrokes, and provides tailored code sequences for users to practice their typing.
+**About the project**
 
-## Tech Stack 👷
+Tip Tap Toe is a typing practice console application designed specifically for developers. It uses a custom API integration (due to no C# library at the time) with Google's Gemini model to generate language specific code sequences, and analyses your keystroke patterns to create personalised practice exercises that target your weak points.
 
-- .NET
-- Google Gemini [1.5 Flash model variant]
+**Why I built it**
 
-## Features 🚀
+I wanted to improve my typing speed when programming, but rather than doing this in a browser I wanted something I could launch directly from my CLI. I hadn't built a console app before (which I feel is a write of passage for most developers), so I thought this would be the perfect opportunity.
 
-- 5 different languages to practice
-- Uses Google's Gemini API to generate typing assessments
-- Schemas are provided in HTTP requests to enforce structured outputs
-- Various models created for JSON deserialisation and key logging
-- Key strokes are logged with character, success and timestamp data
-- Gemini analyses key stroke data to identify weakness and generate personalised practice
-- WPM is calculated and benchmarks are provided to the user
+While I originally started building it for fun, it quickly became a great chance to practice some of the fundamentals in C#, and a crash course in working with structured data. It let me explore making HTTP requests, real time keystroke capture and enforcing structured JSON output from LLMs.
 
-![alt text](https://github.com/rohandrummond/tiptaptoe/blob/main/Assets/tip-tap-toe-screenshots.png?raw=true)
+## Key features 💡
 
-## Setup ⚙️
+**AI generated practice**
 
-__Prerequisites__
-- .NET 8
+- Gemini generates realistic, syntactically valid code sequences based on your chosen language
+- Keystroke analysis identifies slow transitions and error patterns
+- Each practice round adapts based on your previous performance data
+
+**Real time keystroke tracking**
+
+- Precise timing using a `Stopwatch` instance
+- Tracks every keypress including backspaces to understand error patterns
+- Logs success/failure for each character against the target sequence
+
+**WPM (words per minute) calculation and benchmarks**
+
+- Calculates words per minute after each completed round
+- Displays benchmarks (Beginner to Elite) to track your progress
+- Supports continuous practice sessions with fresh sequences each round
+
+**Multi-Language Support**
+
+- Python, C++, Java, C#, and JavaScript
+- Generated code uses realistic patterns, variable names, and syntax for each language
+
+## Tech stack ⚙️
+
+**Framework**
+
+- .NET 9 / C#
+
+**AI Model**
+
+- Google Gemini
+
+
+## Getting Started 🚀
+
+**Prerequisites**
+
+- .NET SDK
 - Google AI Studio API key
 
-__Instructions__
+**Clone the repository**
 
-1. Include your Google Studio API key as a sytem environment variable using this structure ```GEMINI_API_KEY="{Your API key}"```
-2. Clone the repo using ```git clone```
-3. Use ```cd tiptaptoe``` to access repo
-4. Run program using ```dotnet run```
+```bash
+git clone https://github.com/rohandrummond/tiptaptoe.git
+cd tiptaptoe
+```
 
-.NET uses the GetEnvironmentVariable method to access your API key, you can read more about this [here](https://learn.microsoft.com/en-us/dotnet/api/system.environment.getenvironmentvariable?view=net-9.0)
-   
-## License 👨‍⚖️
+**Set up environment variables**
 
-This project is open source under the MIT License.
+Set your Gemini API key as an environment variable:
 
-## Contact 📫
+```bash
+# macOS/Linux
+export GEMINI_API_KEY=your_api_key_here
 
-Check out my other projects and contact info on my [GitHub](https://github.com/rohandrummond) profile.
+# Windows (PowerShell)
+$env:GEMINI_API_KEY="your_api_key_here"
+
+# Windows (Command Prompt)
+set GEMINI_API_KEY=your_api_key_here
+```
+
+**Run the project**
+
+```bash
+dotnet run
+```
+
+Follow the prompts to select a programming language and start practicing.
